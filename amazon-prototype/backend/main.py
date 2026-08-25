@@ -5,10 +5,10 @@ import mysql.connector
 from pydantic import BaseModel
 
 DB_CONFIG = {
-    "host": "localhost",
-    "user": "root",
-    "password": "050419zkx",
-    "database": "Amazon",
+    "host": os.getenv("DB_HOST", "localhost"),
+    "user": os.getenv("DB_USER", "root"),
+    "password": os.getenv("DB_PASSWORD", ""),
+    "database": os.getenv("DB_NAME", "Amazon"),
 }
 
 def get_db():
