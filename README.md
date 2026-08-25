@@ -39,7 +39,7 @@ Browser (localhost:3000) → Express frontend → FastAPI backend (localhost:800
 | `trg_after_review_insert` | Trigger | Updates a product's `last_activity` timestamp when a new review is inserted |
 
 The full SQL lives in `stage 3.sql` (schema + ETL) and
-`amazon-prototype/backend/stage4_features.sql` (advanced programs).
+`stage4_features.sql` (advanced programs).
 
 ## Tech Stack
 
@@ -94,17 +94,10 @@ Visit [http://localhost:3000](http://localhost:3000).
 ```
 .
 ├── stage 3.sql                     # Schema + ETL pipeline
+├── stage4_features.sql             # Stored procedure, transaction, trigger
 ├── amazon-prototype/
 │   ├── backend/
 │   │   ├── main.py                 # FastAPI app (endpoints)
-│   │   ├── stage4_features.sql     # Stored procedure, transaction, trigger
-│   │   ├── requirements.txt
-│   │   └── tests/
-│   └── frontend/
-│       ├── server.js               # Express server / API proxy
-│       ├── views/                  # EJS templates
-│       └── public/
-└── README.md
 ```
 
 ## Notes
