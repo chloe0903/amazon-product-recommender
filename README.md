@@ -95,9 +95,18 @@ Visit [http://localhost:3000](http://localhost:3000).
 .
 ├── stage 3.sql                     # Schema + ETL pipeline
 ├── stage4_features.sql             # Stored procedure, transaction, trigger
-├── amazon-prototype/
-│   ├── backend/
-│   │   ├── main.py                 # FastAPI app (endpoints)
+├── README.md
+├── .gitignore
+└── amazon-prototype/
+    ├── backend/
+    │   ├── main.py                 # FastAPI app (endpoints)
+    │   ├── requirements.txt        # Python dependencies
+    │   └── tests/                  # Backend tests
+    └── frontend/
+        ├── server.js               # Express server / API proxy
+        ├── package.json            # Node dependencies
+        ├── views/                  # EJS templates (home, results)
+        └── public/                 # Static files (index.html)
 ```
 
 ## Notes
