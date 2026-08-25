@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Amazon Product Recommender</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f7fb;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 1100px;
+      background: white;
+      min-height: 100vh;
+      padding: 2rem 2.5rem;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
+    }
+
+    h1 {
+      margin-top: 0;
+      margin-bottom: 1.5rem;
+      color: #111827;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .search-row input[type="text"],
+    .search-row select {
+      flex: 1;
+      padding: 0.8rem 1rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 999px;
+      outline: none;
+      font-size: 0.95rem;
+    }
+
+    .search-row button {
+      padding: 0.7rem 1.6rem;
+      border-radius: 999px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .filters {
+      display: flex;
+      gap: 1rem;
+      color: #475569;
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .filters label {
+      display: flex;
+      flex-direction: column;
+      font-weight: 500;
+      gap: 0.2rem;
+    }
+
+    .filters input {
+      padding: 0.4rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid #cbd5e1;
+      width: 140px;
+      font-size: 0.85rem;
+    }
+
+    .filters .buyer-id {
+      opacity: 0.7;
+    }
+
+    .section-title {
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: #f9fafb;
+      border-radius: 16px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      border: 1px solid #e5e7eb;
+      position: relative;
+    }
+
+    .card-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #0f172a;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 0.25rem 0.55rem;
+      background: #e0e7ff;
+      color: #4338ca;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      margin-right: 0.3rem;
+    }
+
+    .rating-row {
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .rating-star {
+      color: #f59e0b;
+    }
+
+    .action-btn {
+      margin-top: 0.5rem;
+      padding: 0.45rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid #e2e8f0;
+      background: white;
+      font-size: 0.8rem;
+      cursor: pointer;
+      align-self: flex-start;
+      transition: all 0.2s;
+    }
+
+    .action-btn:hover {
+      background: #f1f5f9;
+    }
+
+    .action-btn.buy {
+      background: #111827;
+      color: white;
+    }
+
+    .action-btn.delete {
+      border-color: #ef4444;
+      color: #ef4444;
+    }
+
+    .action-btn.edit {
+      border-color: #0ea5e9;
+      color: #0ea5e9;
+    }
+
+    .status {
+      margin-bottom: 0.75rem;
+      font-size: 0.85rem;
+      color: #64748b;
+      min-height: 1.2em;
+    }
+
+    /* Manager Mode Styles */
+    .manager-controls {
+      display: none;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      padding: 1rem;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+    }
+
+    .manager-controls.active {
+      display: block;
+    }
+
+    .manager-controls h3 {
+      margin-top: 0;
+      font-size: 1rem;
+      color: #15803d;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .form-row input {
+      padding: 0.5rem;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      flex: 1;
+    }
+
+    .edit-mode .card {
+      border-color: #bbf7d0;
+      background: #f0fdf4;
+    }
+
+    .top-products-btn {
+      background: #f59e0b;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <h1>
+      Amazon Product Recommender
+      <label style="font-size: 0.8rem; font-weight: normal; display: flex; align-items: center; gap: 0.5rem;">
+        <input type="checkbox" id="manager-mode-toggle"> Manager Mode
+      </label>
+    </h1>
+
+    <!-- Manager Controls -->
+    <div class="manager-controls" id="manager-controls">
+      <h3>Add New Product</h3>
+      <form id="add-product-form">
+        <div class="form-row">
+          <input type="text" name="asin" placeholder="ASIN" required>
+          <input type="text" name="name" placeholder="Product Name" required>
+        </div>
+        <div class="form-row">
+          <input type="text" name="category" placeholder="Category" required>
+          <input type="text" name="store_id" placeholder="Store ID" required>
+          <input type="number" name="price" placeholder="Price" step="0.01">
+          <button type="submit" class="action-btn" style="background: #15803d; color: white; border: none;">Add
+            Product</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Search bar -->
+    <form id="search-form">
+      <div class="search-row">
+        <input type="text" id="search-input" placeholder="Search products..." autocomplete="off" />
+        <select id="category-select">
+          <option value="">All Categories</option>
+          <option value="Video Games">Video Games</option>
+          <option value="Books">Books</option>
+          <option value="Electronics">Electronics</option>
+          <option value="Clothing">Clothing</option>
+          <option value="Home">Home</option>
+          <option value="Uncategorized">Uncategorized</option>
+        </select>
+        <button type="submit">Search</button>
+      </div>
+    </form>
+
+    <!-- Filters row -->
+    <div class="filters">
+      <label>
+        Min Rating ⭐
+        <input type="number" step="0.1" min="0" max="5" id="min-rating" />
+      </label>
+      <label class="buyer-id">
+        Buyer ID
+        <input type="text" id="buyer-id-input" value="demo_buyer" />
+      </label>
+      <button class="top-products-btn" id="top-products-btn">Show Top Products</button>
+      <button class="top-products-btn" id="my-purchases-btn" style="background: #4f46e5;">My Purchases</button>
+    </div>
+
+    <div class="status" id="status-text"></div>
+
+    <!-- Featured / search results -->
+    <div class="section-title">
+      <span id="results-title">Featured Recommendations</span>
+    </div>
+    <div id="results-grid" class="grid"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById("search-form");
+    const searchInput = document.getElementById("search-input");
+    const minRatingInput = document.getElementById("min-rating");
+    const categorySelect = document.getElementById("category-select");
+    const statusText = document.getElementById("status-text");
+    const resultsGrid = document.getElementById("results-grid");
+    const buyerIdInput = document.getElementById("buyer-id-input");
+    const managerToggle = document.getElementById("manager-mode-toggle");
+    const managerControls = document.getElementById("manager-controls");
+    const addProductForm = document.getElementById("add-product-form");
+    const topProductsBtn = document.getElementById("top-products-btn");
+    const myPurchasesBtn = document.getElementById("my-purchases-btn");
+    const resultsTitle = document.getElementById("results-title");
+
+    let isManagerMode = false;
+
+    managerToggle.addEventListener("change", (e) => {
+      isManagerMode = e.target.checked;
+      if (isManagerMode) {
+        managerControls.classList.add("active");
+        document.body.classList.add("edit-mode");
+      } else {
+        managerControls.classList.remove("active");
+        document.body.classList.remove("edit-mode");
+      }
+      // Re-render to show/hide delete buttons
+      runSearch(false);
+    });
+
+    async function fetchProducts(query, category, minRating) {
+      const params = new URLSearchParams();
+      if (query) params.set("q", query);
+      if (category) params.set("category", category);
+      if (minRating) params.set("min_rating", minRating);
+
+      const res = await fetch("/api/search?" + params.toString());
+      if (!res.ok) throw new Error("Network error");
+      return res.json();
+    }
+
+    async function purchaseProduct(asin) {
+      const buyerId = buyerIdInput.value || "guest";
+      try {
+        const res = await fetch("/api/purchase", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ buyer_id: buyerId, asin: asin })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || data.detail || "Purchase failed");
+        alert(data.status);
+      } catch (err) {
+        alert("Error: " + err.message);
+      }
+    }
+
+    async function deleteProduct(asin) {
+      if (!confirm("Are you sure you want to delete " + asin + "?")) return;
+      try {
+        const res = await fetch("/api/product/" + asin, { method: "DELETE" });
+        if (!res.ok) throw new Error("Delete failed");
+        runSearch(false);
+      } catch (err) {
+        alert("Error deleting: " + err.message);
+      }
+    }
+
+    async function editProduct(product) {
+      const name = prompt("Edit product name:", product.name || "");
+      if (name === null) return;
+      const category = prompt("Edit category:", product.category || "");
+      if (category === null) return;
+      const storeId = prompt("Edit store ID:", product.store_id || "");
+      if (storeId === null) return;
+      const priceInput = prompt("Edit price (leave blank to clear):", product.price ?? "");
+      if (priceInput === null) return;
+
+      const payload = {};
+      if (name.trim() && name.trim() !== product.name) payload.name = name.trim();
+      if (category.trim() && category.trim() !== product.category) payload.category = category.trim();
+      if (storeId.trim() && storeId.trim() !== product.store_id) payload.store_id = storeId.trim();
+      if (priceInput !== "") payload.price = parseFloat(priceInput);
+
+      if (Object.keys(payload).length === 0) {
+        alert("No changes to update.");
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/product/" + product.asin, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Update failed");
+        alert("Product updated.");
+        runSearch(false);
+      } catch (err) {
+        alert("Error updating: " + err.message);
+      }
+    }
+
+    async function submitReview(asin) {
+      const rating = prompt("Enter rating (1-5):");
+      if (!rating) return;
+      const content = prompt("Enter review comment:");
+      const buyerId = buyerIdInput.value || "guest";
+
+      try {
+        const res = await fetch("/api/review", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            buyer_id: buyerId,
+            asin: asin,
+            rating: parseFloat(rating),
+            content: content || ""
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Review failed");
+        alert("Review submitted!");
+      } catch (err) {
+        alert("Error: " + err.message);
+      }
+    }
+
+    addProductForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData.entries());
+      // Convert price to float if present
+      if (data.price) data.price = parseFloat(data.price);
+
+      try {
+        const res = await fetch("/api/product", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.detail || "Failed to add product");
+        }
+        alert("Product added!");
+        e.target.reset();
+        runSearch(false);
+      } catch (err) {
+        alert("Error: " + err.message);
+      }
+    });
+
+    topProductsBtn.addEventListener("click", async () => {
+      const category = categorySelect.value || "All Categories";
+      try {
+        statusText.textContent = "Loading top products...";
+        const res = await fetch("/api/top-products?category=" + encodeURIComponent(category));
+        if (!res.ok) throw new Error("Failed to fetch top products");
+        const products = await res.json();
+        renderProducts(products);
+        resultsTitle.textContent = "Top Rated Products in " + category;
+        statusText.textContent = "";
+      } catch (err) {
+        console.error(err);
+        statusText.textContent = "Error loading top products.";
+      }
+    });
+
+    myPurchasesBtn.addEventListener("click", async () => {
+      const buyerId = buyerIdInput.value;
+      if (!buyerId) {
+        alert("Please enter a Buyer ID");
+        return;
+      }
+      try {
+        statusText.textContent = "Loading purchases...";
+        const res = await fetch("/api/purchased-products/" + encodeURIComponent(buyerId));
+        if (!res.ok) throw new Error("Failed to fetch purchases");
+        const products = await res.json();
+        renderProducts(products, false, true); // isPurchasedList = true
+        resultsTitle.textContent = "Purchases for " + buyerId;
+        statusText.textContent = "";
+      } catch (err) {
+        console.error(err);
+        statusText.textContent = "Error loading purchases.";
+      }
+    });
+
+    function renderProducts(products, isTopList = false, isPurchasedList = false) {
+      const minRating = parseFloat(minRatingInput.value);
+      const categoryFilter = categorySelect.value.trim().toLowerCase();
+
+      resultsGrid.innerHTML = "";
+
+      products.forEach((p) => {
+        // Use real rating from backend, default to 0 if missing
+        const rating = p.avg_rating !== undefined ? p.avg_rating : 0;
+
+        if (!isPurchasedList) {
+          if (!Number.isNaN(minRating) && rating < minRating) return;
+
+
+          if (categoryFilter && categoryFilter !== "all categories") {
+            const cat = (p.category || "").toLowerCase();
+            if (cat !== categoryFilter) return;
+          }
+        }
+
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const title = document.createElement("div");
+        title.className = "card-title";
+        title.textContent = p.name;
+        card.appendChild(title);
+
+        if (p.category) {
+          const pill = document.createElement("span");
+          pill.className = "pill";
+          pill.textContent = p.category;
+          card.appendChild(pill);
+        }
+
+        const ratingRow = document.createElement("div");
+        ratingRow.className = "rating-row";
+        ratingRow.innerHTML =
+          '<span class="rating-star">⭐</span>' +
+          rating.toFixed(2) +
+          " &nbsp;|&nbsp; ASIN " +
+          p.asin;
+        card.appendChild(ratingRow);
+
+        if (p.price) {
+          const priceDiv = document.createElement("div");
+          priceDiv.style.fontSize = "0.9rem";
+          priceDiv.style.fontWeight = "bold";
+          priceDiv.textContent = "$" + p.price;
+          card.appendChild(priceDiv);
+        }
+
+        // Action Buttons
+        const btnRow = document.createElement("div");
+        btnRow.style.display = "flex";
+        btnRow.style.gap = "0.5rem";
+
+        if (isPurchasedList) {
+          const rateBtn = document.createElement("button");
+          rateBtn.className = "action-btn";
+          rateBtn.style.background = "#f59e0b";
+          rateBtn.style.color = "white";
+          rateBtn.style.border = "none";
+          rateBtn.textContent = "Rate / Review";
+          rateBtn.onclick = () => submitReview(p.asin);
+          btnRow.appendChild(rateBtn);
+        } else {
+          const buyBtn = document.createElement("button");
+          buyBtn.className = "action-btn buy";
+          buyBtn.textContent = "Buy Now";
+          buyBtn.onclick = () => purchaseProduct(p.asin);
+          btnRow.appendChild(buyBtn);
+        }
+
+        if (isManagerMode) {
+          const delBtn = document.createElement("button");
+          delBtn.className = "action-btn delete";
+          delBtn.textContent = "Delete";
+          delBtn.onclick = () => deleteProduct(p.asin);
+          const editBtn = document.createElement("button");
+          editBtn.className = "action-btn edit";
+          editBtn.textContent = "Edit";
+          editBtn.onclick = () => editProduct(p);
+          btnRow.append(editBtn, delBtn);
+        }
+
+        card.appendChild(btnRow);
+        resultsGrid.appendChild(card);
+      });
+
+      if (!resultsGrid.children.length) {
+        resultsGrid.innerHTML = "<p>No products match your filters.</p>";
+      }
+    }
+
+    async function runSearch(initial = false) {
+      const q = searchInput.value.trim();
+      const cat = categorySelect.value;
+      const minRating = minRatingInput.value;
+
+      try {
+        statusText.textContent = initial
+          ? "Loading featured recommendations..."
+          : "Searching...";
+        const products = await fetchProducts(q, cat, minRating);
+        renderProducts(products);
+        resultsTitle.textContent = "Search Results";
+        statusText.textContent = "";
+      } catch (err) {
+        console.error(err);
+        statusText.textContent = "Error loading products from backend.";
+      }
+    }
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      runSearch(false);
+    });
+
+    runSearch(true);
+  </script>
+</body>
+
+</html>

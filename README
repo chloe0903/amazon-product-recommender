@@ -1,0 +1,30 @@
+1. run dasebase in Mysql workbench and run stage 3.sql and amazon-prototype/backend/stage4_features.sql respectively
+and change DB_CONFIG in backend/main.py
+
+
+DB_CONFIG = {
+    "host": "localhost",
+    "user": "root",
+    "password": "050419zkx", #replace with your own password
+    "database": "Amazon",
+}
+
+2. Start FastAPI backend:
+
+```
+cd backend
+uvicorn main:app --reload --port 8000
+```
+
+4. Start Node frontend:
+
+```
+cd frontend
+node server.js
+```
+
+4. Open the app in your browser:
+
+```
+http://localhost:3000
+```

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 2rem; }
+      a { text-decoration: none; color: #0366d6; }
+      ul { padding: 0; list-style: none; }
+      li { padding: 0.75rem 0; border-bottom: 1px solid #eee; }
+      .price { font-weight: bold; }
+    </style>
+  </head>
+  <body>
+    <a href="/">&larr; Back</a>
+    <h2>Results for "<%= query %>"</h2>
+    <% if (results.length === 0) { %>
+      <p>No products found.</p>
+    <% } %>
+    <ul>
+      <% results.forEach((product) => { %>
+        <li>
+          <div><%= product.title %></div>
+          <div class="price">$<%= product.price %></div>
+        </li>
+      <% }) %>
+    </ul>
+  </body>
+</html>

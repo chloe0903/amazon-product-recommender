@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 2rem; }
+      form { display: flex; gap: 0.5rem; }
+      input { flex: 1; padding: 0.5rem; }
+      button { padding: 0.5rem 1rem; }
+      .error { color: crimson; margin-top: 1rem; }
+    </style>
+  </head>
+  <body>
+    <h1>Amazon Prototype</h1>
+    <form method="POST" action="/search">
+      <input
+        type="text"
+        name="query"
+        placeholder="Search products"
+        value="<%= query %>"
+        required
+      />
+      <button type="submit">Search</button>
+    </form>
+    <% if (error) { %>
+      <p class="error"><%= error %></p>
+    <% } %>
+  </body>
+</html>
